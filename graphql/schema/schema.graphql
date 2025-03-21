@@ -1,0 +1,119 @@
+#
+# Copyright © 2025 Anonyome Labs, Inc. All rights reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+input RegisterAppOnDeviceInput {
+  bundleId: String!
+  deviceId: String!
+  clientEnv: clientEnvType!
+  build: buildType!
+  standardToken: String
+  voipToken: String
+  locale: String
+  version: String
+}
+
+input SchemaEntry {
+  description: String!
+  fieldName: String!
+  type: String!
+}
+
+input NotifiableServiceSchema {
+  serviceName: String!
+  schema: [SchemaEntry!]
+}
+
+enum FilterAction {
+  ENABLE
+  DISABLE
+}
+
+input Filter {
+  serviceName: String!
+  actionType: FilterAction!
+  rule: String!
+  enableMeta: String
+}
+
+input DeleteAppFromDeviceInput {
+  bundleId: String!
+  deviceId: String!
+}
+
+input UpdateSettingsInput {
+  bundleId: String!
+  deviceId: String!
+  filter: [Filter]!
+  services: [NotifiableServiceSchema!]!
+}
+
+input GetSettingsInput {
+  bundleId: String!
+  deviceId: String!
+}
+
+input UpdateInfoInput {
+  bundleId: String!
+  deviceId: String!
+  build: buildType!
+  locale: String
+  standardToken: String
+  voipToken: String
+  version: String
+}
+
+type Mutation {
+  # register device / update device registration
+  registerAppOnDevice(input: RegisterAppOnDeviceInput!): Boolean @aws_cognito_user_pools
+
+  # delete device given the deviceId
+  deleteAppFromDevice(input: DeleteAppFromDeviceInput!): Boolean
+    @aws_cognito_user_pools
+
+  # update notification configuration settings data, treat as string for now
+  updateNotificationSettings(input: UpdateSettingsInput!): Boolean
+    @aws_cognito_user_pools
+
+  # update device info
+  updateDeviceInfo(input: UpdateInfoInput!): Boolean
+    @aws_cognito_user_pools
+}
+
+type Query {
+  # get notification status, given device ID
+  getNotificationSettings(
+    input: GetSettingsInput!
+  ): NotificationSettingsOutput! @aws_cognito_user_pools
+}
+
+type FilterOutputEntry @aws_cognito_user_pools {
+  serviceName: String!
+  actionType: FilterAction!
+  rule: String!
+  enableMeta: String
+}
+
+type NotificationSettingsOutput @aws_cognito_user_pools {
+  filter: [FilterOutputEntry!]!
+}
+
+enum buildType {
+  RELEASE
+  DEBUG
+}
+
+enum clientEnvType {
+  IOS
+  ANDROID
+  WEB
+  TEST
+  WEBHOOK
+}

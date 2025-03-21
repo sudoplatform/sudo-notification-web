@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "allowJs": false,
+    "allowSyntheticDefaultImports": true,
+    "declaration": false,
+    "downlevelIteration": true,
+    "esModuleInterop": true,
+    "importHelpers": true,
+    "lib": ["WebWorker", "DOM", "ES2020"],
+    "module": "ES2020",
+    "moduleResolution": "node",
+    "outDir": "lib",
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "strict": true,
+    "target": "ES2020",
+    "typeRoots": ["./typings", "./node_modules/@types"],
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "typings"]
+}

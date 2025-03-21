@@ -1,0 +1,26 @@
+#
+# Copyright © 2025 Anonyome Labs, Inc. All rights reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+enum TestNotificationPurpose {
+    STANDARD
+    VOIP
+}
+
+input SendTestNotificationInput {
+  serviceName: String!,
+  purpose: TestNotificationPurpose,
+  data: String!
+  filter: String!
+  title: String
+  body: String
+}
+
+type Mutation {
+  # send a test notification without requiring another Sudo Platform
+  # service in the environment. Not available in all environments.
+  sendTestNotification(input: SendTestNotificationInput): Boolean!
+  @aws_cognito_user_pools
+}

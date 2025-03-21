@@ -1,0 +1,7 @@
+/lib
+/cjs
+coverage/
+src/gen/**
+**/.vscode/**
+.yalc/
+.yarn/
