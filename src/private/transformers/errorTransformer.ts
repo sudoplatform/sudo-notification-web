@@ -15,6 +15,8 @@ import {
   DeviceReadError,
   DeviceUpdateError,
   SchemaValidationError,
+  UserInfoReadError,
+  UserInfoUpdateError,
 } from '../../public/errors'
 
 export class ErrorTransformer {
@@ -34,6 +36,10 @@ export class ErrorTransformer {
         return new DeviceReadError(error.message)
       case 'sudoplatform.ns.SchemaValidation':
         return new SchemaValidationError(error.message)
+      case 'sudoplatform.ns.UserInfoRead':
+        return new UserInfoReadError(error.message)
+      case 'sudoplatform.ns.UserInfoUpdate':
+        return new UserInfoUpdateError(error.message)
       default:
         return mapGraphQLToClientError(error)
     }

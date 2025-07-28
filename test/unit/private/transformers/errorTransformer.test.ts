@@ -15,6 +15,8 @@ import {
   DeviceReadError,
   DeviceUpdateError,
   SchemaValidationError,
+  UserInfoReadError,
+  UserInfoUpdateError,
 } from '../../../../src/public/errors'
 
 const message = 'whoops'
@@ -29,6 +31,8 @@ describe('ErrorTransformer', () => {
     ${'sudoplatform.ns.DeviceDelete'}     | ${new DeviceDeleteError(message)}
     ${'sudoplatform.ns.DeviceRead'}       | ${new DeviceReadError(message)}
     ${'sudoplatform.ns.SchemaValidation'} | ${new SchemaValidationError(message)}
+    ${'sudoplatform.ns.UserInfoRead'}     | ${new UserInfoReadError(message)}
+    ${'sudoplatform.ns.UserInfoUpdate'}   | ${new UserInfoUpdateError(message)}
   `('converts $code to correct exception', ({ code, error }) => {
     expect(
       ErrorTransformer.toClientError({

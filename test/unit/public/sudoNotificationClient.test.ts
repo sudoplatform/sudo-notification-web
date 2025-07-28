@@ -27,6 +27,7 @@ import {
   FilterOutputEntry,
   NotificationSettingsOutput,
   SendTestNotificationInput,
+  UserAndDeviceNotificationSettingsOutput,
 } from '../../../src/gen/graphqlTypes'
 import { ApiClient } from '../../../src/private/apiClient'
 import { SERVICE_NAME } from '../../../src/private/constants'
@@ -68,10 +69,12 @@ describe('DefaultSudoNotificationClient', () => {
     testNotificationsAvailable: true,
   }
 
+  const bundleId = 'bundle-id'
+
   const deviceInfo: NotificationDeviceInfo = {
     deviceId: 'device-id',
     buildType: BuildType.RELEASE,
-    bundleId: 'bundle-id',
+    bundleId,
     appVersion: '1',
     locale: 'en',
   }
@@ -335,6 +338,140 @@ describe('DefaultSudoNotificationClient', () => {
     })
   })
 
+  describe('getUserNotificationConfiguration', () => {
+    it('should throw NotSignedInError if user is not signed in', async () => {
+      when(mockSudoUserClient.isSignedIn()).thenResolve(false)
+
+      await expect(
+        iut.getUserNotificationConfiguration(bundleId),
+      ).rejects.toThrow(NotSignedInError)
+
+      verify(mockSudoUserClient.isSignedIn()).once()
+      verify(
+        mockApiClient.getUserAndDeviceNotificationSettings(anything()),
+      ).never()
+    })
+
+    it('should invoke ApiClient getUserAndDeviceNotificationSettings correctly', async () => {
+      const item: FilterOutputEntry = {
+        rule: '{"==":[1,1]}',
+        serviceName: 'service-1',
+        actionType: FilterAction.Enable,
+        enableMeta: 'some filter',
+      }
+
+      const output: UserAndDeviceNotificationSettingsOutput = {
+        user: {
+          filter: [item],
+        },
+      }
+
+      when(
+        mockApiClient.getUserAndDeviceNotificationSettings(anything()),
+      ).thenResolve(output)
+
+      await expect(
+        iut.getUserNotificationConfiguration(bundleId),
+      ).resolves.toEqual(
+        new NotificationConfiguration([
+          new NotificationFilterItem(
+            item.serviceName,
+            true,
+            item.rule,
+            item.enableMeta ?? undefined,
+          ),
+        ]),
+      )
+
+      verify(mockSudoUserClient.isSignedIn()).once()
+      verify(
+        mockApiClient.getUserAndDeviceNotificationSettings(anything()),
+      ).once()
+      const [actualInput] = capture(
+        mockApiClient.getUserAndDeviceNotificationSettings,
+      ).first()
+      expect(actualInput).toEqual({
+        bundleId,
+      })
+    })
+  })
+
+  describe('getUserAndDeviceNotificationConfiguration', () => {
+    it('should throw NotSignedInError if user is not signed in', async () => {
+      when(mockSudoUserClient.isSignedIn()).thenResolve(false)
+
+      await expect(
+        iut.getUserAndDeviceNotificationConfiguration(deviceInfo),
+      ).rejects.toThrow(NotSignedInError)
+
+      verify(mockSudoUserClient.isSignedIn()).once()
+      verify(
+        mockApiClient.getUserAndDeviceNotificationSettings(anything()),
+      ).never()
+    })
+
+    it('should invoke ApiClient getUserAndDeviceNotificationSettings correctly', async () => {
+      const userItem: FilterOutputEntry = {
+        rule: '{"==":[1,1]}',
+        serviceName: 'service-1',
+        actionType: FilterAction.Enable,
+        enableMeta: 'some filter',
+      }
+      const deviceItem: FilterOutputEntry = {
+        rule: '{"==":[1,1]}',
+        serviceName: 'service-2',
+        actionType: FilterAction.Disable,
+        enableMeta: 'some filter',
+      }
+
+      const output: UserAndDeviceNotificationSettingsOutput = {
+        user: {
+          filter: [userItem],
+        },
+        device: {
+          filter: [deviceItem],
+        },
+      }
+
+      when(
+        mockApiClient.getUserAndDeviceNotificationSettings(anything()),
+      ).thenResolve(output)
+
+      await expect(
+        iut.getUserAndDeviceNotificationConfiguration(deviceInfo),
+      ).resolves.toEqual({
+        user: new NotificationConfiguration([
+          new NotificationFilterItem(
+            userItem.serviceName,
+            true,
+            userItem.rule,
+            userItem.enableMeta ?? undefined,
+          ),
+        ]),
+        device: new NotificationConfiguration([
+          new NotificationFilterItem(
+            deviceItem.serviceName,
+            false,
+            deviceItem.rule,
+            deviceItem.enableMeta ?? undefined,
+          ),
+        ]),
+      })
+
+      verify(mockSudoUserClient.isSignedIn()).once()
+      verify(
+        mockApiClient.getUserAndDeviceNotificationSettings(anything()),
+      ).once()
+      const [actualInput] = capture(
+        mockApiClient.getUserAndDeviceNotificationSettings,
+      ).first()
+      expect(actualInput).toEqual({
+        bundleId,
+        deviceId: deviceInfo.deviceId,
+      })
+    })
+  })
+
   describe('setNotificationConfiguration', () => {
     it('should throw NotSignedInError if user is not signed in', async () => {
       when(mockSudoUserClient.isSignedIn()).thenResolve(false)
@@ -395,6 +532,90 @@ describe('DefaultSudoNotificationClient', () => {
       expect(actualInput).toEqual<typeof actualInput>({
         bundleId: deviceInfo.bundleId,
         deviceId: deviceInfo.deviceId,
+        filter: [
+          {
+            actionType: FilterAction.Enable,
+            enableMeta: item.meta,
+            rule: item.rules,
+            serviceName: item.name,
+          },
+        ],
+        services: [
+          {
+            serviceName: schema.serviceName,
+            schema: [
+              {
+                description: entry.description,
+                fieldName: entry.fieldName,
+                type: entry.type,
+              },
+            ],
+          },
+          { serviceName: 'service-2', schema: [] },
+        ],
+      })
+    })
+  })
+
+  describe('setUserNotificationConfiguration', () => {
+    it('should throw NotSignedInError if user is not signed in', async () => {
+      when(mockSudoUserClient.isSignedIn()).thenResolve(false)
+
+      await expect(
+        iut.setUserNotificationConfiguration(
+          bundleId,
+          new NotificationConfiguration([
+            new NotificationFilterItem(
+              'service-1',
+              true,
+              '{"==":[1,1]}',
+              'meta',
+            ),
+          ]),
+        ),
+      ).rejects.toThrow(NotSignedInError)
+
+      verify(mockSudoUserClient.isSignedIn()).once()
+      verify(mockApiClient.updateNotificationSettings(anything())).never()
+    })
+
+    it('should invoke ApiClient updateNotificationSettings correctly', async () => {
+      const item = new NotificationFilterItem(
+        'service-1',
+        true,
+        '{"==":[1,1]}',
+        'some meta',
+      )
+
+      const config = new NotificationConfiguration([item])
+
+      when(mockApiClient.updateNotificationSettings(anything())).thenResolve(
+        true,
+      )
+
+      const entry = new NotificationSchemaEntry(
+        'entry description',
+        'property',
+        'string',
+      )
+      const schema = new NotificationMetadata('service-1', [entry])
+
+      when(mockSudoNotificationFilterClient1.getSchema()).thenReturn(schema)
+      when(mockSudoNotificationFilterClient2.getSchema()).thenReturn(
+        new NotificationMetadata('service-2', []),
+      )
+
+      await expect(
+        iut.setUserNotificationConfiguration(bundleId, config),
+      ).resolves.toBeUndefined()
+
+      verify(mockSudoUserClient.isSignedIn()).once()
+      verify(mockApiClient.updateNotificationSettings(anything())).once()
+      const [actualInput] = capture(
+        mockApiClient.updateNotificationSettings,
+      ).first()
+      expect(actualInput).toEqual<typeof actualInput>({
+        bundleId: deviceInfo.bundleId,
         filter: [
           {
             actionType: FilterAction.Enable,

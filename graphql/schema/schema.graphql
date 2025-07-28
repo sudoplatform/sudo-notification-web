@@ -50,7 +50,7 @@ input DeleteAppFromDeviceInput {
 
 input UpdateSettingsInput {
   bundleId: String!
-  deviceId: String!
+  deviceId: String
   filter: [Filter]!
   services: [NotifiableServiceSchema!]!
 }
@@ -58,6 +58,11 @@ input UpdateSettingsInput {
 input GetSettingsInput {
   bundleId: String!
   deviceId: String!
+}
+
+input GetUserAndDeviceSettingsInput {
+  bundleId: String!
+  deviceId: String
 }
 
 input UpdateInfoInput {
@@ -72,7 +77,8 @@ input UpdateInfoInput {
 
 type Mutation {
   # register device / update device registration
-  registerAppOnDevice(input: RegisterAppOnDeviceInput!): Boolean @aws_cognito_user_pools
+  registerAppOnDevice(input: RegisterAppOnDeviceInput!): Boolean
+    @aws_cognito_user_pools
 
   # delete device given the deviceId
   deleteAppFromDevice(input: DeleteAppFromDeviceInput!): Boolean
@@ -83,8 +89,7 @@ type Mutation {
     @aws_cognito_user_pools
 
   # update device info
-  updateDeviceInfo(input: UpdateInfoInput!): Boolean
-    @aws_cognito_user_pools
+  updateDeviceInfo(input: UpdateInfoInput!): Boolean @aws_cognito_user_pools
 }
 
 type Query {
@@ -92,6 +97,10 @@ type Query {
   getNotificationSettings(
     input: GetSettingsInput!
   ): NotificationSettingsOutput! @aws_cognito_user_pools
+
+  getUserAndDeviceNotificationSettings(
+    input: GetUserAndDeviceSettingsInput!
+  ): UserAndDeviceNotificationSettingsOutput! @aws_cognito_user_pools
 }
 
 type FilterOutputEntry @aws_cognito_user_pools {
@@ -103,6 +112,11 @@ type FilterOutputEntry @aws_cognito_user_pools {
 
 type NotificationSettingsOutput @aws_cognito_user_pools {
   filter: [FilterOutputEntry!]!
+}
+
+type UserAndDeviceNotificationSettingsOutput @aws_cognito_user_pools {
+  user: NotificationSettingsOutput
+  device: NotificationSettingsOutput
 }
 
 enum buildType {

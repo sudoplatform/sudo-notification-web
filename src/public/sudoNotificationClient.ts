@@ -37,6 +37,7 @@ import { NotificationConfiguration } from './types/notificationConfiguration'
 import { NotificationDeviceInfo } from './types/notificationDeviceInfo'
 import { SudoNotificationClientOptions } from './types/sudoNotificationClientOptions'
 import { SudoNotificationFilterClient } from './types/sudoNotificationFilterClient'
+import { UserAndDeviceNotificationConfiguration } from './types/userAndDeviceNotificationConfiguration'
 
 /**
  * Client used to interface with the Sudo Notification Platform service.
@@ -102,7 +103,40 @@ export interface SudoNotificationClient {
   ): Promise<NotificationConfiguration>
 
   /**
-   * Set the notification configuration for the user.
+   * Get the user's current set of notification configurations for a push
+   * subscription at user level.
+   *
+   * Returns undefined if no user level notification configuration has been set.
+   *
+   * @param bundleId
+   *    Reverse DNS name idenfifying the application. For example
+   *    com.sudoplatform.examples.notification.
+   *
+   * @throws {@link UserInfoReadError} if the retrieval of user level information fails for some reason
+   */
+  getUserNotificationConfiguration(
+    bundleId: string,
+  ): Promise<NotificationConfiguration | undefined>
+
+  /**
+   * Get the user's current set of notification configurations for a push
+   * subscription at user level and device level.
+   *
+   * @param deviceInfo Information that identifies the user's device and application
+   *
+   * @throws {@link DeviceReadError} if the retrieval of device information fails for some reason
+   * @throws {@link UserInfoReadError} if the retrieval of user level information fails for some reason
+   */
+  getUserAndDeviceNotificationConfiguration(
+    deviceInfo: NotificationDeviceInfo,
+  ): Promise<UserAndDeviceNotificationConfiguration>
+
+  /**
+   * Set the notification configuration for the user's device.
+   *
+   * Any device specific configuration is evaluated first. Evaluation of
+   * rules will fall back to user level settings if there is no matching
+   * device rule or it is just a catch-all rule that matches.
    *
    * @param deviceInfo Information that identifies the user's device and application
    *
@@ -111,6 +145,24 @@ export interface SudoNotificationClient {
    */
   setNotificationConfiguration(
     deviceInfo: NotificationDeviceInfo,
+    config: NotificationConfiguration,
+  ): Promise<void>
+
+  /**
+   * Set the notification configuration for the user across all devices.
+   *
+   * Any device specific configuration is evaluated first. Evaluation of
+   * rules will fall back to user level settings if there is no matching
+   * device rule or it is just a catch-all rule that matches.
+   *
+   * @param bundleId
+   *    Reverse DNS name idenfifying the application. For example
+   *    com.sudoplatform.examples.notification.
+   *
+   * @throws {@link SchemaValidationError} if the retrieval fails for some other reason
+   */
+  setUserNotificationConfiguration(
+    bundleId: string,
     config: NotificationConfiguration,
   ): Promise<void>
 
@@ -256,10 +308,63 @@ export class DefaultSudoNotificationClient implements SudoNotificationClient {
     return NotificationConfigurationTransformer.toAPI(settings)
   }
 
-  public async setNotificationConfiguration(
+  public async getUserNotificationConfiguration(
+    bundleId: string,
+  ): Promise<NotificationConfiguration | undefined> {
+    await this.checkIsSignedInOrThrow()
+
+    const settings = await this.apiClient.getUserAndDeviceNotificationSettings({
+      bundleId,
+    })
+
+    return settings.user
+      ? NotificationConfigurationTransformer.toAPI(settings.user)
+      : undefined
+  }
+
+  public async getUserAndDeviceNotificationConfiguration(
+    deviceInfo: NotificationDeviceInfo,
+  ): Promise<UserAndDeviceNotificationConfiguration> {
+    await this.checkIsSignedInOrThrow()
+
+    const settings = await this.apiClient.getUserAndDeviceNotificationSettings({
+      bundleId: deviceInfo.bundleId,
+      deviceId: deviceInfo.deviceId,
+    })
+
+    return {
+      user: settings.user
+        ? NotificationConfigurationTransformer.toAPI(settings.user)
+        : undefined,
+      device: settings.device
+        ? NotificationConfigurationTransformer.toAPI(settings.device)
+        : undefined,
+    }
+  }
+
+  public setNotificationConfiguration(
     deviceInfo: NotificationDeviceInfo,
     config: NotificationConfiguration,
   ): Promise<void> {
+    return this.setUserOrDeviceNotificationConfiguration(deviceInfo, config)
+  }
+
+  public setUserNotificationConfiguration(
+    bundleId: string,
+    config: NotificationConfiguration,
+  ): Promise<void> {
+    return this.setUserOrDeviceNotificationConfiguration(bundleId, config)
+  }
+
+  private async setUserOrDeviceNotificationConfiguration(
+    deviceInfoOrBundleId: NotificationDeviceInfo | string,
+    config: NotificationConfiguration,
+  ): Promise<void> {
+    const { bundleId, deviceId } =
+      typeof deviceInfoOrBundleId === 'string'
+        ? { bundleId: deviceInfoOrBundleId, deviceId: undefined }
+        : deviceInfoOrBundleId
+
     await this.checkIsSignedInOrThrow()
 
     const services = this.notifiableServices
@@ -267,8 +372,8 @@ export class DefaultSudoNotificationClient implements SudoNotificationClient {
       .map((schema) => NotificationMetadataTransformer.toGraphQL(schema))
 
     await this.apiClient.updateNotificationSettings({
-      bundleId: deviceInfo.bundleId,
-      deviceId: deviceInfo.deviceId,
+      bundleId,
+      deviceId,
       filter: NotificationConfigurationTransformer.toGraphQLFilters(config),
       services,
     })

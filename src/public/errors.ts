@@ -126,3 +126,21 @@ export class SchemaValidationError extends NotificationError {
     super(message)
   }
 }
+
+/**
+ * The user notification settings could not be read
+ */
+export class UserInfoReadError extends NotificationError {
+  constructor(msg?: string) {
+    super(msg)
+  }
+}
+
+/**
+ * The user notification settings could not be updated
+ */
+export class UserInfoUpdateError extends NotificationError {
+  constructor(msg?: string) {
+    super(msg)
+  }
+}

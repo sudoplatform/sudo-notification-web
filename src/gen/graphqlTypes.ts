@@ -47,6 +47,11 @@ export type GetSettingsInput = {
   deviceId: Scalars['String']['input'];
 };
 
+export type GetUserAndDeviceSettingsInput = {
+  bundleId: Scalars['String']['input'];
+  deviceId?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   deleteAppFromDevice?: Maybe<Scalars['Boolean']['output']>;
@@ -94,11 +99,17 @@ export type NotificationSettingsOutput = {
 export type Query = {
   __typename?: 'Query';
   getNotificationSettings: NotificationSettingsOutput;
+  getUserAndDeviceNotificationSettings: UserAndDeviceNotificationSettingsOutput;
 };
 
 
 export type QueryGetNotificationSettingsArgs = {
   input: GetSettingsInput;
+};
+
+
+export type QueryGetUserAndDeviceNotificationSettingsArgs = {
+  input: GetUserAndDeviceSettingsInput;
 };
 
 export type RegisterAppOnDeviceInput = {
@@ -144,9 +155,15 @@ export type UpdateInfoInput = {
 
 export type UpdateSettingsInput = {
   bundleId: Scalars['String']['input'];
-  deviceId: Scalars['String']['input'];
+  deviceId?: InputMaybe<Scalars['String']['input']>;
   filter: Array<InputMaybe<Filter>>;
   services: Array<NotifiableServiceSchema>;
+};
+
+export type UserAndDeviceNotificationSettingsOutput = {
+  __typename?: 'UserAndDeviceNotificationSettingsOutput';
+  device?: Maybe<NotificationSettingsOutput>;
+  user?: Maybe<NotificationSettingsOutput>;
 };
 
 export enum BuildType {
@@ -175,6 +192,13 @@ export type GetNotificationSettingsQueryVariables = Exact<{
 
 
 export type GetNotificationSettingsQuery = { __typename?: 'Query', getNotificationSettings: { __typename?: 'NotificationSettingsOutput', filter: Array<{ __typename?: 'FilterOutputEntry', serviceName: string, actionType: FilterAction, rule: string, enableMeta?: string | null }> } };
+
+export type GetUserAndDeviceNotificationSettingsQueryVariables = Exact<{
+  input: GetUserAndDeviceSettingsInput;
+}>;
+
+
+export type GetUserAndDeviceNotificationSettingsQuery = { __typename?: 'Query', getUserAndDeviceNotificationSettings: { __typename?: 'UserAndDeviceNotificationSettingsOutput', user?: { __typename?: 'NotificationSettingsOutput', filter: Array<{ __typename?: 'FilterOutputEntry', serviceName: string, actionType: FilterAction, rule: string, enableMeta?: string | null }> } | null, device?: { __typename?: 'NotificationSettingsOutput', filter: Array<{ __typename?: 'FilterOutputEntry', serviceName: string, actionType: FilterAction, rule: string, enableMeta?: string | null }> } | null } };
 
 export type NotificationSettingsOutputFragment = { __typename?: 'NotificationSettingsOutput', filter: Array<{ __typename?: 'FilterOutputEntry', serviceName: string, actionType: FilterAction, rule: string, enableMeta?: string | null }> };
 
@@ -206,9 +230,13 @@ export type UpdateNotificationSettingsMutationVariables = Exact<{
 
 export type UpdateNotificationSettingsMutation = { __typename?: 'Mutation', updateNotificationSettings?: boolean | null };
 
+export type UserAndDeviceNotificationSettingsOutputFragment = { __typename?: 'UserAndDeviceNotificationSettingsOutput', user?: { __typename?: 'NotificationSettingsOutput', filter: Array<{ __typename?: 'FilterOutputEntry', serviceName: string, actionType: FilterAction, rule: string, enableMeta?: string | null }> } | null, device?: { __typename?: 'NotificationSettingsOutput', filter: Array<{ __typename?: 'FilterOutputEntry', serviceName: string, actionType: FilterAction, rule: string, enableMeta?: string | null }> } | null };
+
 export const NotificationSettingsOutputFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"NotificationSettingsOutput"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"NotificationSettingsOutput"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"filter"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"serviceName"}},{"kind":"Field","name":{"kind":"Name","value":"actionType"}},{"kind":"Field","name":{"kind":"Name","value":"rule"}},{"kind":"Field","name":{"kind":"Name","value":"enableMeta"}}]}}]}}]} as unknown as DocumentNode<NotificationSettingsOutputFragment, unknown>;
+export const UserAndDeviceNotificationSettingsOutputFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"UserAndDeviceNotificationSettingsOutput"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"UserAndDeviceNotificationSettingsOutput"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"NotificationSettingsOutput"}}]}},{"kind":"Field","name":{"kind":"Name","value":"device"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"NotificationSettingsOutput"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"NotificationSettingsOutput"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"NotificationSettingsOutput"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"filter"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"serviceName"}},{"kind":"Field","name":{"kind":"Name","value":"actionType"}},{"kind":"Field","name":{"kind":"Name","value":"rule"}},{"kind":"Field","name":{"kind":"Name","value":"enableMeta"}}]}}]}}]} as unknown as DocumentNode<UserAndDeviceNotificationSettingsOutputFragment, unknown>;
 export const DeleteAppFromDeviceDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"DeleteAppFromDevice"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"DeleteAppFromDeviceInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deleteAppFromDevice"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}]}]}}]} as unknown as DocumentNode<DeleteAppFromDeviceMutation, DeleteAppFromDeviceMutationVariables>;
 export const GetNotificationSettingsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getNotificationSettings"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"GetSettingsInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getNotificationSettings"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"NotificationSettingsOutput"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"NotificationSettingsOutput"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"NotificationSettingsOutput"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"filter"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"serviceName"}},{"kind":"Field","name":{"kind":"Name","value":"actionType"}},{"kind":"Field","name":{"kind":"Name","value":"rule"}},{"kind":"Field","name":{"kind":"Name","value":"enableMeta"}}]}}]}}]} as unknown as DocumentNode<GetNotificationSettingsQuery, GetNotificationSettingsQueryVariables>;
+export const GetUserAndDeviceNotificationSettingsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getUserAndDeviceNotificationSettings"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"GetUserAndDeviceSettingsInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getUserAndDeviceNotificationSettings"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"UserAndDeviceNotificationSettingsOutput"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"NotificationSettingsOutput"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"NotificationSettingsOutput"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"filter"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"serviceName"}},{"kind":"Field","name":{"kind":"Name","value":"actionType"}},{"kind":"Field","name":{"kind":"Name","value":"rule"}},{"kind":"Field","name":{"kind":"Name","value":"enableMeta"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"UserAndDeviceNotificationSettingsOutput"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"UserAndDeviceNotificationSettingsOutput"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"NotificationSettingsOutput"}}]}},{"kind":"Field","name":{"kind":"Name","value":"device"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"NotificationSettingsOutput"}}]}}]}}]} as unknown as DocumentNode<GetUserAndDeviceNotificationSettingsQuery, GetUserAndDeviceNotificationSettingsQueryVariables>;
 export const RegisterAppOnDeviceDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"RegisterAppOnDevice"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"RegisterAppOnDeviceInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"registerAppOnDevice"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}]}]}}]} as unknown as DocumentNode<RegisterAppOnDeviceMutation, RegisterAppOnDeviceMutationVariables>;
 export const SendTestNotificationDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"sendTestNotification"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SendTestNotificationInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"sendTestNotification"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}]}]}}]} as unknown as DocumentNode<SendTestNotificationMutation, SendTestNotificationMutationVariables>;
 export const UpdateDeviceInfoDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"updateDeviceInfo"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UpdateInfoInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateDeviceInfo"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}]}]}}]} as unknown as DocumentNode<UpdateDeviceInfoMutation, UpdateDeviceInfoMutationVariables>;

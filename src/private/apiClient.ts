@@ -28,6 +28,9 @@ import {
   GetNotificationSettingsDocument,
   GetNotificationSettingsQuery,
   GetSettingsInput,
+  GetUserAndDeviceNotificationSettingsDocument,
+  GetUserAndDeviceNotificationSettingsQuery,
+  GetUserAndDeviceSettingsInput,
   NotificationSettingsOutput,
   RegisterAppOnDeviceDocument,
   RegisterAppOnDeviceInput,
@@ -41,6 +44,7 @@ import {
   UpdateNotificationSettingsDocument,
   UpdateNotificationSettingsMutation,
   UpdateSettingsInput,
+  UserAndDeviceNotificationSettingsOutput,
 } from '../gen/graphqlTypes'
 import { SERVICE_NAME } from './constants'
 import { ErrorTransformer } from './transformers/errorTransformer'
@@ -106,6 +110,20 @@ export class ApiClient {
     })
 
     return data.getNotificationSettings
+  }
+
+  public async getUserAndDeviceNotificationSettings(
+    input: GetUserAndDeviceSettingsInput,
+  ): Promise<UserAndDeviceNotificationSettingsOutput> {
+    const data =
+      await this.performQuery<GetUserAndDeviceNotificationSettingsQuery>({
+        query: GetUserAndDeviceNotificationSettingsDocument,
+        variables: { input },
+        fetchPolicy: 'network-only',
+        calleeName: this.getUserAndDeviceNotificationSettings.name,
+      })
+
+    return data.getUserAndDeviceNotificationSettings
   }
 
   public async updateNotificationSettings(
